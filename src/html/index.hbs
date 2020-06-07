@@ -21,8 +21,35 @@
 	{{> base/header 'sticky'}}
 
 	<main id='content'>
+		<div class='interactive-wrapper' id="interactive-wrapper"></div>
+		<div class='intro'>
+			<h1 class='intro__hed'>Around the World</h1>
+			<p class='intro__dek'>A visual traversal from your doorstep, around the world, and back again.</p>
+			<p class='intro__byline'>By
+				<a href='http://dnewcomb.com' target='_blank'>
+					<strong>David Newcomb</strong>
+				</a>
+			</p>
+			<time class='intro__time'>June 2020</time>
+			<div class='intro__prelude'>
+				<p>This is the intro paragraph.
+				<p>
+			</div>
+		</div>
 
-		{{> story/intro }}
+		<section id='scrolly-side'>
+			<div class='scrolly'>
+							<!-- sticky graphic -->
+				<figure class='sticky'>
+					<div id="graphic-wrapper" class="graphic-wrapper">
+					</div>
+				</figure>
+				<article class='article'>
+					<div class='step-intro' data-index='0'></div>
+					<div class='step' data-index='1'></div>
+				</article>
+			</div>
+		</section>
 
 		<script src="{{basepath}}assets/scripts/d3-delaunay.min.js"></script>
         <script src="{{basepath}}assets/scripts/d3.v5.js"></script>

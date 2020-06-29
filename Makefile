@@ -19,5 +19,5 @@ github:
 	rm -rf docs
 	cp -r dist/ docs
 	git add -A
-	git commit -m "update fonts and naming"
+	git commit -m "Finalizing article for transfer"
 	git push

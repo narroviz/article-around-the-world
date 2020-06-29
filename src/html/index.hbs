@@ -39,14 +39,22 @@
 			</p>
 			<time class='intro__time'>June 2020</time>
 			<div class='intro__prelude'>
-				<p>This is the intro paragraph.
-				<p>
+                <p>
+                    On June 14, 2020 in the middle of <a class="link-text" target="_blank" href="https://oceanconservancy.org/blog/2020/05/26/celebrate-national-ocean-month-us/">Ocean Month</a>, U.S. explorer, oceanographer and astronaut <a class="link-text" target="_blank" href="https://en.wikipedia.org/wiki/Kathryn_D._Sullivan">Kathy Sullivan</a> hit an incredible milestone. As part of a research mission, she dove nearly 36,000 feet to the deepest point in the ocean: <a class="link-text" target="_blank" href="https://www.cnn.com/travel/article/astronaut-kathy-sullivan-challenger-deep-dive-scn/index.html">Challenger Deep</a>. Completing this dive is the ocean's extreme answer to summitting Mt. Everest, the highest point on Earth, standing at a formidable 29,000 ft. In completing her voyage, Kathy became the first and only person to both fly to the outermost reaches of space exploration and dive to its farthest depths.<br><br>
+
+                    The scientific importance of her mission to collect samples from the seafloor highlights, as well, the crucial goals of Ocean Month: to promote sustainable ocean use and encourage ocean exploration. We have yet to observe nearly <a class="link-text" target="_blank" href="https://www.livescience.com/14493-ocean-exploration-deep-sea-diving.html">95% of the ocean</a> or to classify <a class="link-text" target="_blank" href="https://oceanservice.noaa.gov/facts/ocean-species.html">90% of ocean species</a>, making it Earth's last unexplored frontier. Discovering these new species could lead to untold beauty, appreciation, and innovation. Observing nature's ingenuity has led to beneficial advancements like <a class="link-text" target="_blank" href="https://www.technologyreview.com/2008/03/06/221447/whale-inspired-wind-turbines/">whalefin-inspired wind turbines</a> and <a class="link-text" target="_blank" href="https://www.wired.com/2005/03/shark-skin-inspires-ship-coating/">sharkskin-inspired ship coating</a> amongst many others.<br><br>
+
+                    In honor of Ocean Month and Kathy's exploration, I spent some time virtually exploring the Earth. I collected land elevation data, ocean depth data, and international boundary data (see <a class="link-text" href="#appendix">Appendix</a>). I wanted to know what's on the <a class="link-text" target="_blank"  href="https://www.antipodesmap.com/">other side of the world</a>. I wanted to learn what it would be like to take a journey from my front door, up to the North Pole, down the opposite side to the South Pole, and back home again. This trip would represent the longest "straight line" trip I could take around the world. Mapping it out could show me which oceans I'd sail on and which nations I'd visit.<br><br>
+
+                    Visually inspired by <a class="link-text" target="_blank" href="https://www.reddit.com/r/westworld/comments/fw37d5/what_is_the_divergence_thing/">Westworld's divergence visualization</a>, I created a circular  visualization of Earth's elevation to help explore every slice of the world. Just type in any starting place below and start exploring!
+        		</p>
+			</div>
 			</div>
 		</div>
+		<br>
+		<br>
+		<br>
 
-{{!-- 		<div id="basketball-autocomplete" class="autocomplete">
-			<input type="text" class="form-control typeahead" id="basketball-team-input">
-		</div> --}}
 		<input id="autocomplete" placeholder="Enter your origin" type="text" class="form-control">
 		<text id="longitude" value=""></text>
 		<text id="latitude" value=""></text>
@@ -58,6 +66,19 @@
 			<div id="graphic-wrapper" class="graphic-wrapper"></div>
   		</div>
 		
+		<div class='intro' id="appendix" style="font-family: 'Avenir'">
+			<h2>Appendix</h2>
+			<p>The global elevation data above comes from <a class="link-text" target="_blank" href="https://www.ngdc.noaa.gov/mgg/global/">NOAA</a>. To calculate elevation, they created a grid of the Earth and averaged elevation for each rectangle of the grid. They made the grid from 21,600 vertical slices of longitude (representing 1 <a class="link-text" target="_blank" href="https://en.wikipedia.org/wiki/Minute_and_second_of_arc">arc-minute</a> each) and 10,800 horizontal slices of latitude. Due to the curvature of the Earth, these curved grid rectangles are approximately 1 mile by 1 mile at Equator, and like a thinning ribbon, they converge to 0 miles wide each of the poles.<br><br>
+
+			Since each grid slice has width, at any given latitude-longitude point, there can be overlap between countries or maritime zones. For instance, half the width of a slice could be taken up by Nepal, and the other half could be taken up by China. In situations of overlap, I defaulted to show the country with a lower population count. On the flip side, for maritime overlap, I prioritized showing larger bodies of water since oceans are the article's primary focus.<br><br>
+
+			Going back a moment though, how do we find intersections between these slices and countries/oceans in the first place? To find intersections, I started by finding <a href="https://en.wikipedia.org/wiki/Shapefile">shapefiles</a>. In the geospatial world, shapefiles are file formats that outline the boundaries of any shape and often carry some metadata. I got maritime shapefile data from <a class="link-text" target="_blank" href="https://www.marineregions.org/">Marine Regions</a> and country shapefile data from <a class="link-text" target="_blank" href="https://www.naturalearthdata.com/downloads/10m-cultural-vectors/">Natural Earth</a>. After converting global elevation slices into shapefiles as well, I overlayed each slice on top of land and water files, found intersections and output combined data. After that, it was a matter of making the graph.<br><br>
+
+			One interesting learning about maritime data was how far off the coast countries maintain economic autonomy (often 200 miles) as part of their <a class="link-text" target="_blank" href="https://en.wikipedia.org/wiki/Exclusive_economic_zone#:~:text=An%20exclusive%20economic%20zone%20(EEZ,production%20from%20water%20and%20wind.">Exclusive Economic Zones</a>. I added these maritime zones as part of each country's territory, helping highlight island nations that may have otherwise appeared unfairly small in the circular visualization.<br><br>
+
+			I'm also currently working on a <a class="link-text" target="_blank" href="https://native-land.ca/territory-acknowledgement/">territory acknowledgment</a> article that can help highlight the native lands that modern countries occupy. For this article, I'm applying the same method above and using native territory shapefiles from the <a class="link-text" target="_blank" href="https://native-land.ca/">Native Land</a> project. The data is highly detailed for North America and Australia, but largely absent from other parts of the world, so I'm working to find other sources and help expand the Native Land repository.<br><br>
+			</p>
+		</div>
 
 
 	</main>

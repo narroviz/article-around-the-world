@@ -18,7 +18,7 @@ const LONGITUDE_INCREMENT = 0.0166658951
 const S3_FOLDER = "around-the-world"
 const S3_REGION = "us-east-2"
 const S3_BASE_URL = `https://article-data.s3.${S3_REGION}.amazonaws.com/${S3_FOLDER}`
-const MARIANA_TRENCH_LAT = 11.373333
+const MARIANA_TRENCH_LAT = 11.3733
 const MARIANA_TRENCH_LON = 142.5917
 
 
@@ -28,7 +28,7 @@ function resize() {
 
 function init() {
 	// window.addEventListener('load', fadeEffect);
-	d3.select("#autocomplete").attr("value", "Mariana Trench - Challenger Deep")
+	// d3.select("#autocomplete").attr("value", "Mariana Trench - Challenger Deep")
 	setConfig()
 	drawGlobalPath(DIMENSIONS, BOUNDS)
 }
@@ -71,8 +71,8 @@ async function setConfig() {
 }
 
 async function drawGlobalPath(dimensions, bounds) {
-	let defaultLatitude = MARIANA_TRENCH_LAT
-	let defaultLongitude = MARIANA_TRENCH_LON
+	let defaultLatitude = 1000
+	let defaultLongitude = 1000
 
 	var element = document.querySelector('#latitude');
 	var observer = new MutationObserver(function(mutations) {
@@ -114,6 +114,7 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 		d3.select("#autocomplete")
 			.style("font-size", "15px")
 			.style("transform", `translate(-50%, 200%)`)
+		d3.select(".intro").style("padding-top", "4.5rem");
 	}
 	const preloader = document.querySelector('.preloader');
 	preloader.style.opacity = 1;
@@ -125,7 +126,7 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 	const iso2FlagAspectRatios = await d3.json('./../assets/data/iso2_flag_aspect_ratios.json')
 	const iso2FlagColors = await d3.json('./../assets/data/iso2_flag_colors.json')
 	const iso2Name = {}
-	// const pathData = await d3.json('./../assets/data/everest.json')
+	// const pathData = await d3.json('./../assets/data/8556.json')
 	
 	const distances = pathData.distance
 	const elevations = pathData.elevation
@@ -304,7 +305,13 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 				const oceanEndIndex = oceanSegment["end"]
 
 				if (i >= oceanStartIndex && i <= oceanEndIndex) {
-					orderedOceans.push(oceanLabel)
+					if (addedOcean && (oceanLabel.includes("Ocean"))) {
+						orderedOceans[i] = oceanLabel
+					} else if (addedOcean) {
+						continue
+					} else {
+						orderedOceans.push(oceanLabel)
+					}
 					addedOcean = true
 					if (oceanLabel in waterDistance) {
 						if (currentElevation > 0) {
@@ -341,7 +348,15 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 				let countryName = countrySegment["name"]
 
 				if (i >= countryStartIndex && i <= countryEndIndex) {
-					orderedCountries.push(`${countryLabel};${countryName}`)
+					if (countryLabel !== '' && countryLabel && addedLabel) {
+						if (getPopulationFromISO2(countryLabel) < getPopulationFromISO2(orderedCountries[i])) {
+							orderedCountries[i] = `${countryLabel};${countryName}`
+						}
+					} else if (addedLabel) {
+						continue
+					} else {
+						orderedCountries.push(`${countryLabel};${countryName}`)
+					}
 					addedLabel = true
 					if (countryLabel in countryDistance) {
 						if (currentElevation > 0) {
@@ -361,9 +376,6 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 					}
 					break
 				}
-			}
-			if (addedLabel) {
-				break
 			}
 		}
 		if (!addedLabel) {
@@ -732,7 +744,7 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 	const numRows = uniqueCountries.length > maxFlagsPerRow ? 2 : 1
 	if(!isMobile.any()) {
 		if (numRows === 2) {
-			plotFlagRow(uniqueCountries.slice(0, Math.floor(uniqueCountries.length / 2)), 0, bounds, iso2FlagAspectRatios)
+			plotFlagRow(uniqueCountries.slice(0, Math.floor(uniqueCountries.length / 2) + 1), 0, bounds, iso2FlagAspectRatios)
 			plotFlagRow(uniqueCountries.slice(Math.ceil(uniqueCountries.length / 2), uniqueCountries.length), 1, bounds, iso2FlagAspectRatios)
 		} else {
 			plotFlagRow(uniqueCountries, 0, bounds, iso2FlagAspectRatios)
@@ -847,9 +859,14 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 						d3.select(`#center-border-flag-${mouseISO2.toLowerCase()}`).attr("opacity", 1)
 						if (mouseCountry === "" || mouseISO2 === "INT") {
 							if (mouseOcean !== '') {
+								let mouseOceanFormatted = mouseOcean
+								const maxMobileStringLength = 17
+								if (isMobile.any() && mouseOceanFormatted.length > maxMobileStringLength) {
+									mouseOceanFormatted = `${mouseOceanFormatted.substring(0,maxMobileStringLength).trim()}...;`
+								}
 								const distance = getDistanceFromNumIndices(waterDistance[mouseOcean]['ocean']) 
 								d3.select("#icon-text-flag")
-									.html(`${mouseOcean}`)
+									.html(`${mouseOceanFormatted}`)
 								 	.style("fill", "#54a0ff")
 								 	.style("font-weight", "700px")
 								d3.select("#icon-text-ocean").html(`${numberWithCommas(distance)} mi.`)
@@ -864,7 +881,11 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 							}
 
 						} else {
-							const mouseCountryFormatted = (mouseCountry === '') ? '' : mouseCountry.split(";")[1]
+							let mouseCountryFormatted = (mouseCountry === '') ? '' : mouseCountry.split(";")[1]
+							const maxMobileStringLength = 17
+							if (isMobile.any() && mouseCountryFormatted.length > maxMobileStringLength) {
+								mouseCountryFormatted = `${mouseCountryFormatted.substring(0,maxMobileStringLength).trim()}...;`
+							}
 							const mouseOceanDistance = getDistanceFromNumIndices(countryDistance[mouseISO2]['ocean'])
 							const mouseLandDistance = getDistanceFromNumIndices(countryDistance[mouseISO2]['land'])
 							d3.select("#icon-text-ocean").html(`${numberWithCommas(mouseOceanDistance)} mi.`)
@@ -938,6 +959,10 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 				.duration(200)
 			    .style("fill", "transparent")
 			    .attr("opacity", 0)
+			d3.selectAll(`*[id^=border-flag-`)
+				.filter(function() {
+			      	return !this.id.startsWith(`border-flag-np`)
+			    })
 				.style("stroke", "black")
 				.style("stroke-width", 0.1)
 
@@ -1019,9 +1044,14 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 			d3.select(`#icon-flag`).attr("opacity", 0)
 			d3.select(`#center-flag-${clickedISO2}`).attr("opacity", 1)
 			d3.select(`#center-border-flag-${clickedISO2}`).attr("opacity", 1)
-			d3.select(`*[id^=border-flag-${clickedISO2}`)
+
+			d3.selectAll(`*[id^=border-flag-${clickedISO2}`)
 			    .style("fill", "transparent")
 			    .attr("opacity", 0)
+			d3.select(`*[id^=border-flag-${clickedISO2}`)
+			    .filter(function() {
+			      	return !this.id.startsWith(`border-flag-np`)
+			    })
 				.style("stroke", "black")
 				.style("stroke-width", 0.1)
 
@@ -1049,7 +1079,9 @@ function getLatitudeFromIndex(index) {
 			.domain([0, 10800])
 			.range([-90, 90])
 		latitude = indexToLatitudeInverseScale(index - 10800).toFixed(4)
+
 	}
+	latitude = latitude > 90 ? 90 : (latitude < -90 ? -90 : latitude)
 	return latitude
 }
 
@@ -1184,8 +1216,9 @@ function getDistanceFromNumIndices(numIndices) {
 
 
 function drawPointLabels(latitude, longitude, elevation, country, ocean, farXY, labelLineLength, iso2FlagAspectRatios, bounds, prefix, update) {
+		const formattedOcean = ocean.includes('Mediterranean Sea') ? 'Mediterranean Sea' : ocean
 		const formattedISO2 = (country === '') ? '' : country.split(";")[0].toLowerCase()
-		const formattedCountryName = (country === '') ? '' : country.split(";")[1]
+		const formattedCountryName = (country === '') ? '' : (elevation < 0 && formattedOcean !=='' && country.split(";")[1] !== "Int'l Waters" && !isMobile.any()) ? `${country.split(";")[1]} (Maritime Zone)` : country.split(";")[1]
 
 		const labelBuffer = 5
 		const flagHeight = 15
@@ -1198,8 +1231,8 @@ function drawPointLabels(latitude, longitude, elevation, country, ocean, farXY, 
 		const yAnchor = farXY[1]
 		const textAnchor = isMobile.any() ? "middle" : (longitude < 0) ?  "end" : "start"
 
-		const upperText = (ocean === "") ? '' : formattedCountryName
-		const lowerText = (ocean === "") ? formattedCountryName : ocean
+		const upperText = (formattedOcean === "") ? '' : formattedCountryName
+		const lowerText = (formattedOcean === "") ? formattedCountryName : formattedOcean
 		const latLonText = `${Math.abs(latitude).toFixed(4)}&deg;${latitudeDirection}, ${Math.abs(longitude).toFixed(4)}&deg;${longitudeDirection}`
 		const elevationText = `${numberWithCommas(Math.round(elevation * METERS_TO_FEET))} ft.`
 		const flagLink = (formattedISO2 in iso2FlagAspectRatios) ? `./../assets/images/flags/${formattedISO2}.png` : ''
@@ -1563,9 +1596,9 @@ async function plotFlagRow(countries, rowIndex, bounds, iso2FlagAspectRatios) {
 			.attr("height", flagHeight)
 			.attr("width", (d,i) =>  {
 				// Nepal has the only non-rectangular flag
-				if (d === "NP") {
-					return 0
-				}
+				// if (d === "NP") {
+				// 	return 0
+				// }
 				const imageDimensions = iso2FlagAspectRatios[countries[i].toLowerCase()]
 				const imageHeight = imageDimensions['height']
 				const imageWidth = imageDimensions['width']
@@ -1589,7 +1622,7 @@ async function plotFlagRow(countries, rowIndex, bounds, iso2FlagAspectRatios) {
 			.attr("opacity", 0)
 			.attr("fill", "none")
 			.style("stroke", "black")
-			.style("stroke-width", .1)
+			.style("stroke-width", d => d === "NP" ? 0 : .1)
 			.attr("pointer-events", "none")
 
 
@@ -1605,12 +1638,19 @@ async function plotFlagRow(countries, rowIndex, bounds, iso2FlagAspectRatios) {
 }
 
 function getPlotIndexFromLatLon(latitude, longitude) {
+	let adjustment = 0
+	let plotIndex
 	if (longitude < 0) {
-		const adjustment = 10802
-		return Math.round(NEGATIVE_SCALE(latitude) + adjustment)
+		adjustment = 10802
+		plotIndex = Math.round(NEGATIVE_SCALE(latitude) + adjustment)
 	} else {
-		return Math.round(POSITIVE_SCALE(latitude))
+		if (latitude.toFixed(4) === MARIANA_TRENCH_LAT.toString() && longitude.toFixed(4) === MARIANA_TRENCH_LON.toString()) {
+			adjustment = -2
+		}
+		plotIndex = Math.round(POSITIVE_SCALE(latitude) + adjustment)
 	}
+	plotIndex = (plotIndex < 0) ? 0 : ((plotIndex > (NUM_INDICES-1) ? (NUM_INDICES-1) : plotIndex)) 
+	return plotIndex
 }
 
 function getAntipodeLongitude(longitude){
@@ -2028,6 +2068,250 @@ const ISO3_ISO2_MAPPING = {
   ZMB: "ZM",
   ZWE: "ZW",
   XKX: "XK"
+}
+
+// 2019 Population
+const ISO2_POPULATION_MAPPING = {
+	'AF': 38041.7540,
+	'AL': 2880.9170,
+	'DZ': 43053.0540,
+	'AS': 55.3120,
+	'AD': 77.1420,
+	'AO': 31825.2950,
+	'AI': 14.8690,
+	'AG': 97.1180,
+	'AR': 44780.6770,
+	'AM': 2957.7310,
+	'AW': 106.3140,
+	'AU': 25203.1980,
+	'AT': 8955.1020,
+	'AZ': 10047.7180,
+	'BS': 389.4820,
+	'BH': 1641.1720,
+	'BD': 163046.1610,
+	'BB': 287.0250,
+	'BY': 9452.4110,
+	'BE': 11539.3280,
+	'BZ': 390.3530,
+	'BJ': 11801.1510,
+	'BM': 62.5060,
+	'BT': 763.0920,
+	'BO': 11513.1000,
+	'BA': 3301.0,
+	'BW': 2303.6970,
+	'BR': 211049.5270,
+	'VG': 30.0300,
+	'BN': 433.2850,
+	'BG': 7000.1190,
+	'BF': 20321.3780,
+	'BI': 11530.5800,
+	'KH': 16486.5420,
+	'CM': 25876.3800,
+	'CA': 37411.0470,
+	'CV': 549.9350,
+	'KY': 64.9480,
+	'CF': 4745.1850,
+	'TD': 15946.8760,
+	'CL': 18952.0380,
+	'CN': 1433783.6860,
+	'CO': 50339.4430,
+	'KM': 850.8860,
+	'CK': 17.5480,
+	'CR': 5047.5610,
+	'HR': 4130.3040,
+	'CU': 11333.4830,
+	'CW': 163.4240,
+	'CY': 1198.5750,
+	'CZ': 10689.2090,
+	'DK': 5771.8760,
+	'DJ': 973.5600,
+	'DM': 71.8080,
+	'DO': 10738.9580,
+	'CD': 86790.5670,
+	'EC': 17373.6620,
+	'EG': 100388.0730,
+	'SV': 6453.5530,
+	'GQ': 1355.9860,
+	'ER': 3497.1170,
+	'EE': 1325.6480,
+	'ET': 112078.7300,
+	'FK': 3.3770,
+	'FO': 48.6780,
+	'FJ': 889.9530,
+	'FI': 5532.1560,
+	'FR': 65129.7280,
+	'GF': 290.8320,
+	'PF': 279.2870,
+	'GA': 2172.5790,
+	'GM': 2347.7060,
+	'GE': 3996.7650,
+	'DE': 83517.0450,
+	'GH': 30417.8560,
+	'GI': 33.7010,
+	'GR': 10473.4550,
+	'GL': 56.6720,
+	'GD': 112.0030,
+	'GP': 400.0560,
+	'GU': 167.2940,
+	'GT': 17581.4720,
+	'GN': 12771.2460,
+	'GW': 1920.9220,
+	'GY': 782.7660,
+	'HT': 11263.0770,
+	'HN': 9746.1170,
+	'HK': 7436.1540,
+	'HU': 9684.6790,
+	'IS': 339.0310,
+	'IN': 1366417.7540,
+	'ID': 270625.5680,
+	'IR': 82913.9060,
+	'IQ': 39309.7830,
+	'IE': 4882.4950,
+	'IM': 84.5840,
+	'IL': 8519.3770,
+	'IT': 60550.0750,
+	'CI': 25716.5440,
+	'JM': 2948.2790,
+	'JP': 126860.3010,
+	'JO': 10101.6940,
+	'KZ': 18551.4270,
+	'KE': 52573.9730,
+	'KI': 117.6060,
+	'KW': 4207.0830,
+	'KG': 6415.8500,
+	'LA': 7169.4550,
+	'LV': 1906.7430,
+	'LB': 6855.7130,
+	'LS': 2125.2680,
+	'LR': 4937.3740,
+	'LY': 6777.4520,
+	'LI': 38.0190,
+	'LT': 2759.6270,
+	'LU': 615.7290,
+	'MO': 640.4450,
+	'MK': 2083.4590,
+	'MG': 26969.3070,
+	'MW': 18628.7470,
+	'MY': 31949.7770,
+	'MV': 530.9530,
+	'ML': 19658.0310,
+	'MT': 440.3720,
+	'MH': 58.7910,
+	'MQ': 375.5540,
+	'MR': 4525.6960,
+	'MU': 1269.6680,
+	'YT': 266.1500,
+	'MX': 127575.5290,
+	'FM': 113.8150,
+	'MD': 4043.2630,
+	'MC': 38.9640,
+	'MN': 3225.1670,
+	'ME': 627.9870,
+	'MS': 4.9890,
+	'MA': 36471.7690,
+	'MZ': 30366.0360,
+	'MM': 54045.4200,
+	'NA': 2494.5300,
+	'NR': 10.7560,
+	'NP': 28608.7100,
+	'NL': 17097.1300,
+	'NC': 282.7500,
+	'NZ': 4783.0630,
+	'NI': 6545.5020,
+	'NE': 23310.7150,
+	'NG': 200963.5990,
+	'NU': 1.6150,
+	'KP': 25666.1610,
+	'MP': 57.2160,
+	'NO': 5378.8570,
+	'OM': 4974.9860,
+	'PK': 216565.3180,
+	'PW': 18.0080,
+	'PS': 4981.4200,
+	'PA': 4246.4390,
+	'PG': 8776.1090,
+	'PY': 7044.6360,
+	'PE': 32510.4530,
+	'PH': 108116.6150,
+	'PL': 37887.7680,
+	'PT': 10226.1870,
+	'PR': 2933.4080,
+	'QA': 2832.0670,
+	'CG': 5380.5080,
+	'RE': 888.9270,
+	'RO': 19364.5570,
+	'RU': 145872.2560,
+	'RW': 12626.9500,
+	'BL': 9.8470,
+	'KN': 52.8230,
+	'LC': 182.7900,
+	'MF': 38.0020,
+	'PM': 5.8220,
+	'VC': 110.5890,
+	'WS': 197.0970,
+	'SM': 33.8600,
+	'ST': 215.0560,
+	'SA': 34268.5280,
+	'SN': 16296.3640,
+	'RS': 8772.2350,
+	'SC': 97.7390,
+	'SL': 7813.2150,
+	'SG': 5804.3370,
+	'SX': 42.3880,
+	'SK': 5457.0130,
+	'SI': 2078.6540,
+	'SB': 669.8230,
+	'SO': 15442.9050,
+	'ZA': 58558.2700,
+	'KR': 51225.3080,
+	'SS': 11062.1130,
+	'ES': 46736.7760,
+	'LK': 21323.7330,
+	'SD': 42813.2380,
+	'SR': 581.3720,
+	'SZ': 1148.1300,
+	'SE': 10036.3790,
+	'CH': 8591.3650,
+	'SY': 17070.1350,
+	'TW': 23773.8760,
+	'TJ': 9321.0180,
+	'TZ': 58005.4630,
+	'TH': 69625.5820,
+	'TL': 1293.1190,
+	'TG': 8082.3660,
+	'TK': 1.3400,
+	'TO': 104.4940,
+	'TT': 1394.9730,
+	'TN': 11694.7190,
+	'TR': 83429.6150,
+	'TM': 5942.0890,
+	'TC': 38.1910,
+	'TV': 11.6460,
+	'UG': 44269.5940,
+	'UA': 43993.6380,
+	'AE': 9770.5290,
+	'GB': 67530.1720,
+	'US': 329064.9170,
+	'VI': 104.5780,
+	'UY': 3461.7340,
+	'UZ': 32981.7160,
+	'VU': 299.8820,
+	'VA': 0.7990,
+	'VE': 28515.8290,
+	'VN': 96462.1060,
+	'WF': 11.4320,
+	'EH': 582.4630,
+	'YE': 29161.9220,
+	'ZM': 17861.0300,
+	'ZW': 14645.4680
+}
+
+function getPopulationFromISO2(iso2) {
+	if (iso2 in ISO2_POPULATION_MAPPING) {
+		return ISO2_POPULATION_MAPPING[iso2]
+	} else {
+		return 0
+	}
 }
 
 function getCountryISO2FromCountryMetadata(countryMetadata) {

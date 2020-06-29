@@ -6,6 +6,14 @@
 	<script src="https://unpkg.com/enter-view"></script>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css" integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous">
 
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBn3GOUTQMDNTctq4DRIeAIOkMAJWDMsGQ&libraries=places&callback=initAutocomplete" async defer></script>  
+	
+	<script src="{{basepath}}assets/scripts/d3-delaunay.min.js"></script>
+    <script src="{{basepath}}assets/scripts/d3.v5.js"></script>
+    <script src="{{basepath}}assets/scripts/typeahead.bundle.js"></script>
+    <script src="{{basepath}}assets/scripts/autocomplete.js"></script>
+	<script src='main.js?version={{timestamp}}' async></script>
+
 	{{> base/meta}}
 
 	<link inline rel='stylesheet' href='bundle.css' />
@@ -21,12 +29,11 @@
 	{{> base/header 'sticky'}}
 
 	<main id='content'>
-		<div class='interactive-wrapper' id="interactive-wrapper"></div>
 		<div class='intro'>
 			<h1 class='intro__hed'>Around the World</h1>
-			<p class='intro__dek'>A visual traversal from your doorstep, around the world, and back again.</p>
+			<p class='intro__dek'>A map from your doorstep, to the other side of the world, and back again.</p>
 			<p class='intro__byline'>By
-				<a href='http://dnewcomb.com' target='_blank'>
+				<a href='http://dnewcomb.com' class="link-text" target='_blank'>
 					<strong>David Newcomb</strong>
 				</a>
 			</p>
@@ -37,36 +44,26 @@
 			</div>
 		</div>
 
+{{!-- 		<div id="basketball-autocomplete" class="autocomplete">
+			<input type="text" class="form-control typeahead" id="basketball-team-input">
+		</div> --}}
+		<input id="autocomplete" placeholder="Enter your origin" type="text" class="form-control">
+		<text id="longitude" value=""></text>
+		<text id="latitude" value=""></text>
 
-		<div id="graphic-wrapper" class="graphic-wrapper"></div>
+		<div id="wrapper-container">
+			<div class="preloader">
+			    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="lds-ripple" style="background:0 0"><circle cx="50" cy="50" r="4.719" fill="none" stroke="#3DC257" stroke-width="2"><animate attributeName="r" calcMode="spline" values="0;40" keyTimes="0;1" dur="3" keySplines="0 0.2 0.8 1" begin="-1.5s" repeatCount="indefinite"/><animate attributeName="opacity" calcMode="spline" values="1;0" keyTimes="0;1" dur="3" keySplines="0.2 0 0.8 1" begin="-1.5s" repeatCount="indefinite"/></circle><circle cx="50" cy="50" r="27.591" fill="none" stroke="#54a0ff" stroke-width="2"><animate attributeName="r" calcMode="spline" values="0;40" keyTimes="0;1" dur="3" keySplines="0 0.2 0.8 1" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" calcMode="spline" values="1;0" keyTimes="0;1" dur="3" keySplines="0.2 0 0.8 1" begin="0s" repeatCount="indefinite"/></circle></svg>
+	  		</div>
+			<div id="graphic-wrapper" class="graphic-wrapper"></div>
+  		</div>
 		
-{{!-- 		<section id='scrolly-side'>
-			<div class='scrolly'>
-							<!-- sticky graphic -->
-				<figure class='sticky'>
-					<div id="graphic-wrapper" class="graphic-wrapper"></div>
-					<br><br><br><br><br><br>
-				</figure>
-				<article class='article'>
-					<div class='step-intro' data-index='0'></div>
-					<div class='step' data-index='1'></div>
-					<div class='step' data-index='2'></div>
-					<div class='step' data-index='3'></div>
-					<div class='step' data-index='4'></div>
-					<div class='step' data-index='5'></div>
-				</article>
-			</div>
-		</section> --}}
 
 
-		<script src="{{basepath}}assets/scripts/d3-delaunay.min.js"></script>
-        <script src="{{basepath}}assets/scripts/d3.v5.js"></script>
-        <script src="{{basepath}}assets/scripts/typeahead.bundle.js"></script>
 	</main>
 
 	{{> base/footer }}
 
-	<script src='main.js?version={{timestamp}}' async></script>
 </body>
 
 </html>

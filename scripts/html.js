@@ -45,7 +45,7 @@ function loadData() {
   }, {});
 
   data.timestamp = Date.now();
-  data.basepath = ENV === 'dev' ? '' : 'http://wanderwhim.com/';
+  data.basepath = ENV === 'dev' ? '' : 'https://wanderwhim.com/';
   return Promise.resolve(data);
 }
 

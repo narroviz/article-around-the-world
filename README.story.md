@@ -165,7 +165,7 @@ Variable names in stylus (use these for `font-family` since they contain proper 
 
 Put everything (images, audio, data, etc) in `src/assets/`.
 
-When deployed, assets paths will remain relative. _However_, you'll notice that in `index.hbs` there is a line like `<script src='{{basepath}}assets/scripts/d3.v5.9.1.min.js'></script>`. `basepath` here switches from nothing in local development, to `http://wanderwhim.com/` in production. We have a common assets folder for stuff like (which also occurs with fonts). If you need to use this project for a non-Wanderwhim one, make sure to update the `data.basepath` variable in `scripts/html.js`.
+When deployed, assets paths will remain relative. _However_, you'll notice that in `index.hbs` there is a line like `<script src='{{basepath}}assets/scripts/d3.v5.9.1.min.js'></script>`. `basepath` here switches from nothing in local development, to `https://wanderwhim.com/` in production. We have a common assets folder for stuff like (which also occurs with fonts). If you need to use this project for a non-Wanderwhim one, make sure to update the `data.basepath` variable in `scripts/html.js`.
 
 # Deploy
 

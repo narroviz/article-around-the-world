@@ -4,7 +4,7 @@ const replace = require('replace-in-file');
 // basepath
 replace.sync({
   files: './scripts/html.js',
-  from: 'http://wanderwhim.com/',
+  from: 'https://wanderwhim.com/',
   to: '',
 });
 

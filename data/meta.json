@@ -1,15 +1,15 @@
 {
 	"title": "Wanderwhim",
 	"description": "This is the article description.",
-	"site": "http://wanderwhim.com",
+	"site": "https://wanderwhim.com",
 	"siteName": "Wanderwhim",
-	"url": "http://wanderwhim.com/year/month/name/",
+	"url": "https://wanderwhim.com/year/month/name/",
 	"keywords": "tk",
 	"imgFacebook": "",
 	"imgTwitter": "",
 	"author": {
 		"name": "David Newcomb",
-		"url": "http://wanderwhim.com",
+		"url": "https://wanderwhim.com",
 		"twitterHandle": ""
 	},
 	"analytics": "",

@@ -38,7 +38,7 @@ async function setConfig() {
 	const width = wrapperWidth * 1
 	DIMENSIONS = {
 		width: width,
-		height: isMobile.any() ? (window.innerHeight * 0.7) : window.innerHeight * 1,
+		height: isMobile.any() ? (1 * window.innerHeight) : window.innerHeight * 1,
 		margin: {
 			top: 0,
 			right: 0,
@@ -73,6 +73,30 @@ async function setConfig() {
 async function drawGlobalPath(dimensions, bounds) {
 	let defaultLatitude = 1000
 	let defaultLongitude = 1000
+	const suggestionGroup = d3.selectAll(".suggestion")
+	suggestionGroup.on("click", onSuggestionClick)
+	d3.select("#autocomplete").on("keydown", onAutocompleteKeydown)
+
+	function onSuggestionClick(e, suggestionIndex) {
+		const suggestionItem = d3.select(suggestionGroup.nodes()[suggestionIndex])
+		const suggestion = suggestionItem.attr("value")
+		const suggestionLat = suggestionItem.attr("latitude")
+		const suggestionLon = suggestionItem.attr("longitude")
+		d3.select("#autocomplete").attr("autocomplete", "on")
+		$("#autocomplete").val(suggestion)
+
+		defaultLatitude = parseFloat(suggestionLat)
+    	defaultLongitude = parseFloat(suggestionLon)
+    	d3.selectAll("#graphic-wrapper > *").remove();
+    	setConfig()
+  		drawGlobalPathByLatLon(defaultLatitude, defaultLongitude, DIMENSIONS, BOUNDS)
+  		d3.select(".pac-container").style("height", 0)
+	}
+
+	function onAutocompleteKeydown() {
+		d3.select(".pac-container").style("height", "150px").style("overflow", "scroll")
+	}
+
 
 	var element = document.querySelector('#latitude');
 	var observer = new MutationObserver(function(mutations) {
@@ -113,7 +137,7 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 	if(isMobile.any()) {
 		d3.select("#autocomplete")
 			.style("font-size", "15px")
-			.style("transform", `translate(-50%, 200%)`)
+			.style("transform", `translate(-50%, 0%)`)
 		d3.select(".intro").style("padding-top", "4.5rem");
 	}
 	const preloader = document.querySelector('.preloader');
@@ -123,10 +147,10 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 
 	d3.select(`#country-flag-group`).remove()
 	const pathData = await d3.json(`${S3_BASE_URL}/${fileIndex}.json`)
-	const iso2FlagAspectRatios = await d3.json('./../assets/data/iso2_flag_aspect_ratios.json')
-	const iso2FlagColors = await d3.json('./../assets/data/iso2_flag_colors.json')
+	const iso2FlagAspectRatios = await d3.json('/assets/data/iso2_flag_aspect_ratios.json')
+	const iso2FlagColors = await d3.json('/assets/data/iso2_flag_colors.json')
 	const iso2Name = {}
-	// const pathData = await d3.json('./../assets/data/8556.json')
+	// const pathData = await d3.json('/assets/data/everest.json')
 	
 	const distances = pathData.distance
 	const elevations = pathData.elevation
@@ -397,7 +421,9 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 	
 
 	const landDistance = Math.round((numLandIndices / NUM_INDICES) * EARTH_CIRCUMFERENCE * METERS_TO_MILES)
+	const landPct = Math.round((numLandIndices / NUM_INDICES) * 1000) / 10
 	const oceanDistance = Math.round((numOceanIndices / NUM_INDICES) * EARTH_CIRCUMFERENCE * METERS_TO_MILES)
+	const oceanPct = Math.round((numOceanIndices / NUM_INDICES) * 1000) / 10
 	const uniqueCountries = [...new Set(countries.map(x => getCountryISO2FromCountryMetadata(x)))].filter(country => country != 'AQ')
 	const numNations = uniqueCountries.length
 
@@ -409,8 +435,8 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 		const iconHeight = 35
 		const icons = [
 			{'filename': 'flag', 'value': `${numNations} Countries`, 'size': (iconHeight * .8)},
-			{'filename': 'ocean', 'value': `${numberWithCommas(oceanDistance)} mi.`, 'size': iconHeight},
-			{'filename': 'land', 'value': `${numberWithCommas(landDistance)} mi.`, 'size': iconHeight}
+			{'filename': 'ocean', 'value': isMobile.any() ? `${oceanPct}%` : `${oceanPct}% &nbsp; (${numberWithCommas(oceanDistance)} mi.)`, 'size': iconHeight},
+			{'filename': 'land', 'value': isMobile.any() ? `${landPct}%` : `${landPct}% &nbsp; (${numberWithCommas(landDistance)} mi.)`, 'size': iconHeight}
 		]
 		const flagYValue = - iconVerticalSpace * (icons.length) / 3 - icons.length * iconHeight / 3
 
@@ -422,7 +448,7 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 			.append("svg:image")
 				.attr("id", d =>`icon-${d.filename}`)
 				.attr("class", "point-flag")
-				.attr("xlink:href", d => `./../assets/images/${d.filename}.svg`)
+				.attr("xlink:href", d => `/assets/images/${d.filename}.svg`)
 				.attr("height", d => d.size)
 				.style("justify-content", "center")
 				.attr("x", -iconHeight / 2)
@@ -452,9 +478,9 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 		const iconHeight = 35
 		const iconWidth = 40
 		const icons = [
-			{'filename': 'ocean', 'value': `${numberWithCommas(oceanDistance)} mi.`, 'size': iconWidth, 'x': -iconHorizontalSpace-iconWidth/2},
+			{'filename': 'ocean', 'value': isMobile.any() ? `${oceanPct}%` : `${oceanPct}% &nbsp; (${numberWithCommas(oceanDistance)} mi.)`, 'size': iconWidth, 'x': -iconHorizontalSpace-iconWidth/2},
 			{'filename': 'flag', 'value': `${numNations} Countries`, 'size': (iconWidth * .8), 'x': -iconWidth/2},
-			{'filename': 'land', 'value': `${numberWithCommas(landDistance)} mi.`, 'size': iconWidth, 'x': iconHorizontalSpace-iconWidth/2}
+			{'filename': 'land', 'value': isMobile.any() ? `${landPct}%` : `${landPct}% &nbsp; (${numberWithCommas(landDistance)} mi.)`, 'size': iconWidth, 'x': iconHorizontalSpace-iconWidth/2}
 		]
 		const flagYValue = DIMENSIONS.boundedRadius + iconHeight/2
 
@@ -466,7 +492,7 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 			.append("svg:image")
 				.attr("id", d =>`icon-${d.filename}`)
 				.attr("class", "point-flag")
-				.attr("xlink:href", d => `./../assets/images/${d.filename}.svg`)
+				.attr("xlink:href", d => `/assets/images/${d.filename}.svg`)
 				.attr("width", d => d.size)
 				.style("justify-content", "center")
 				.attr("x", d => d.x)
@@ -650,6 +676,7 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 		drawPointLabels(antipodeLatitude, antipodeLongitude, antipodeElevation, antipodeCountry, antipodeOcean, antipodeFarXY, labelLineLength, iso2FlagAspectRatios, bounds, "antipode")
 	} else {
 		const zeroCoords = [0, 0]
+		console.log(searchLocationCountry)
 		drawPointLabels(latitude, longitude, searchLocationElevation, searchLocationCountry, searchLocationOcean, zeroCoords, labelLineLength, iso2FlagAspectRatios, bounds, "search")
 	}
 
@@ -680,29 +707,31 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 			.attr("stroke-width", 3)
 			.attr("opacity", 1)
 
-	const locationDots = bounds.selectAll(".location-circle")
-		.data([antipodeIndex])
-		.enter().append("circle")
-			.attr("id", d => (d === searchLocationIndex) ? "search-dot" : "antipode-dot")
-			.attr("class", "location-circle")
-			.style("fill", d => {
-				if (orderedElevations[d] < 0) {
-					return oceanColor
-				} else {
-					return landColor
-				}
-			})
-			.style("stroke-width", 2)
-			.style("stroke", d => {
-				if (orderedElevations[d] < 0) {
-					return oceanColors[0]
-				} else {
-					return landColors[1]
-				}
-			})
-			.attr("cx", d => getCoordinatesForAngle(ANGLE_SCALE(d), RADIUS_SCALE(orderedElevations[d]) / DIMENSIONS.boundedRadius)[0])
-			.attr("cy", d => getCoordinatesForAngle(ANGLE_SCALE(d), RADIUS_SCALE(orderedElevations[d]) / DIMENSIONS.boundedRadius)[1])
-			.attr("r", d => 5)
+	if(!isMobile.any()) {
+		const locationDots = bounds.selectAll(".location-circle")
+			.data([antipodeIndex])
+			.enter().append("circle")
+				.attr("id", d => (d === searchLocationIndex) ? "search-dot" : "antipode-dot")
+				.attr("class", "location-circle")
+				.style("fill", d => {
+					if (orderedElevations[d] < 0) {
+						return oceanColor
+					} else {
+						return landColor
+					}
+				})
+				.style("stroke-width", 2)
+				.style("stroke", d => {
+					if (orderedElevations[d] < 0) {
+						return oceanColors[0]
+					} else {
+						return landColors[1]
+					}
+				})
+				.attr("cx", d => getCoordinatesForAngle(ANGLE_SCALE(d), RADIUS_SCALE(orderedElevations[d]) / DIMENSIONS.boundedRadius)[0])
+				.attr("cy", d => getCoordinatesForAngle(ANGLE_SCALE(d), RADIUS_SCALE(orderedElevations[d]) / DIMENSIONS.boundedRadius)[1])
+				.attr("r", d => 5)
+		}
 
 	
 	const locationStar = bounds.selectAll(".search-star")
@@ -876,8 +905,8 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 									.html("Int'l Waters")
 								 	.style("fill", "#54a0ff")
 								 	.style("font-weight", "700px")
-								d3.select("#icon-text-ocean").html(`${numberWithCommas(oceanDistance)} mi.`)
-								d3.select("#icon-text-land").html(`${numberWithCommas(landDistance)} mi.`)
+								d3.select("#icon-text-ocean").html(isMobile.any() ? `${oceanPct}%` : `${oceanPct}% &nbsp; (${numberWithCommas(oceanDistance)} mi.)`)
+								d3.select("#icon-text-land").html(isMobile.any() ? `${landPct}%` : `${landPct}% &nbsp; (${numberWithCommas(landDistance)} mi.)`)
 							}
 
 						} else {
@@ -903,8 +932,8 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 						d3.select("#icon-text-flag")
 							.html(`${numNations} Countries`)
 							.style("fill", "#000000")
-						d3.select("#icon-text-ocean").html(`${numberWithCommas(oceanDistance)} mi.`)
-						d3.select("#icon-text-land").html(`${numberWithCommas(landDistance)} mi.`)
+						d3.select("#icon-text-ocean").html(isMobile.any() ? `${oceanPct}%` : `${oceanPct}% &nbsp; (${numberWithCommas(oceanDistance)} mi.)`)
+						d3.select("#icon-text-land").html(isMobile.any() ? `${landPct}%` : `${landPct}% &nbsp; (${numberWithCommas(landDistance)} mi.)`)
 					}
 				}
 				previousMouseISO2 = mouseISO2
@@ -930,8 +959,8 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 			d3.select("#icon-text-flag")
 				.html(`${numNations} Countries`)
 				.style("fill", "#000000")
-			d3.select("#icon-text-ocean").html(`${numberWithCommas(oceanDistance)} mi.`)
-			d3.select("#icon-text-land").html(`${numberWithCommas(landDistance)} mi.`)
+			d3.select("#icon-text-ocean").html(isMobile.any() ? `${oceanPct}%` : `${oceanPct}% &nbsp; (${numberWithCommas(oceanDistance)} mi.)`)
+			d3.select("#icon-text-land").html(isMobile.any() ? `${landPct}%` : `${landPct}% &nbsp; (${numberWithCommas(landDistance)} mi.)`)
 		}
 	}
 
@@ -973,8 +1002,8 @@ async function drawGlobalPathByLatLon(latitude, longitude, dimensions, bounds) {
 			d3.select("#icon-text-flag")
 				.html(`${numNations} Countries`)
 				.style("fill", "#000000")
-			d3.select("#icon-text-ocean").html(`${numberWithCommas(oceanDistance)} mi.`)
-			d3.select("#icon-text-land").html(`${numberWithCommas(landDistance)} mi.`)
+			d3.select("#icon-text-ocean").html(isMobile.any() ? `${oceanPct}%` : `${oceanPct}% &nbsp; (${numberWithCommas(oceanDistance)} mi.)`)
+			d3.select("#icon-text-land").html(isMobile.any() ? `${landPct}%` : `${landPct}% &nbsp; (${numberWithCommas(landDistance)} mi.)`)
 			cloakCountry = null
 			cloakApplied = false
 		} 
@@ -1101,7 +1130,7 @@ function drawCenterFlags(yValue, countries, iso2FlagAspectRatios, bounds) {
 		.append("svg:image")
 			.attr("id", (d,i) => `center-flag-${d.toLowerCase()}`)
 			.attr("class", "center-flag")
-			.attr("xlink:href", d => `./../assets/images/flags/${d.toLowerCase()}.png`)
+			.attr("xlink:href", d => `/assets/images/flags/${d.toLowerCase()}.png`)
 			.attr("height", flagHeight)
 			.style("justify-content", "center")
 			.attr("x", (d,i) => {
@@ -1235,7 +1264,7 @@ function drawPointLabels(latitude, longitude, elevation, country, ocean, farXY, 
 		const lowerText = (formattedOcean === "") ? formattedCountryName : formattedOcean
 		const latLonText = `${Math.abs(latitude).toFixed(4)}&deg;${latitudeDirection}, ${Math.abs(longitude).toFixed(4)}&deg;${longitudeDirection}`
 		const elevationText = `${numberWithCommas(Math.round(elevation * METERS_TO_FEET))} ft.`
-		const flagLink = (formattedISO2 in iso2FlagAspectRatios) ? `./../assets/images/flags/${formattedISO2}.png` : ''
+		const flagLink = (formattedISO2 in iso2FlagAspectRatios) ? `/assets/images/flags/${formattedISO2}.png` : ''
 
 		if (update) {
 			d3.select(`#${prefix}-label-upper`)
@@ -1327,7 +1356,7 @@ function drawPointLabels(latitude, longitude, elevation, country, ocean, farXY, 
 				.style("justify-content", "center")
 				.attr("x", xFlagAnchor)
 				.attr("y", yAnchor + 25)
-				.attr("opacity", isMobile.any() ? 0 : 1)
+				.attr("opacity",  1)
 			bounds.append("rect")
 				.attr("id", `${prefix}-label-border-flag`)
 				.attr("class", "border-flag")
@@ -1345,7 +1374,7 @@ function drawPointLabels(latitude, longitude, elevation, country, ocean, farXY, 
 				})
 				.attr("x", xFlagAnchor)
 				.attr("y", yAnchor + 25)
-				.attr("opacity", isMobile.any() ? 0 : 1)
+				.attr("opacity", 1)
 				.attr("fill", "none")
 				.style("stroke", "black")
 				.style("stroke-width", .1)
@@ -1555,7 +1584,7 @@ async function plotFlagRow(countries, rowIndex, bounds, iso2FlagAspectRatios) {
 
 	const imageDimensionsArray = []
 	for (var i = 0; i < countries.length; i++) {
-		const imgDimensions = getImageDimensions(`./../assets/images/flags/${countries[i].toLowerCase()}.png`)
+		const imgDimensions = getImageDimensions(`/assets/images/flags/${countries[i].toLowerCase()}.png`)
 		imageDimensionsArray.push(imgDimensions)
 	}
 
@@ -1566,7 +1595,7 @@ async function plotFlagRow(countries, rowIndex, bounds, iso2FlagAspectRatios) {
 		.append("svg:image")
 			.attr("id", (d,i) => `list-flag-${d.toLowerCase()}-${i}`)
 			.attr("class", `list-flag-${rowIndex}`)
-			.attr("xlink:href", d => `./../assets/images/flags/${d.toLowerCase()}.png`)
+			.attr("xlink:href", d => `/assets/images/flags/${d.toLowerCase()}.png`)
 			.attr("height", flagHeight)
 			.style("justify-content", "center")
 			.style('cursor', 'pointer')
